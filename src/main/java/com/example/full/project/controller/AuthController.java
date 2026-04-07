@@ -354,26 +354,10 @@ public class AuthController {
         try {
             otpService.sendOtp(normalizedEmail, otp);
         } catch (RuntimeException ex) {
-            // Fallback mode: if mail delivery fails, complete signup directly.
-            if (userRepository.existsByEmailIgnoreCase(normalizedEmail)) {
-                return ResponseEntity.status(HttpStatus.CONFLICT).body("Email already registered");
-            }
-
-            AppUser user = new AppUser();
-            user.setName(normalizedName);
-            user.setEmail(normalizedEmail);
-            user.setPassword(passwordEncoder.encode(normalizedPassword));
-            user.setRole(resolveNewUserRole(normalizedEmail));
-            userRepository.save(user);
-
-            setSessionUser(session, user);
-            clearOtpSession(session);
-
-            Map<String, Object> response = new LinkedHashMap<>();
-            response.put("message", "OTP delivery failed, signup completed directly");
-            response.put("role", user.getRole());
-            response.put("otpBypassed", true);
-            return ResponseEntity.ok(response);
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(Map.of(
+                    "message", ex.getMessage(),
+                    "success", false,
+                    "otpBypassed", false));
         }
 
         session.setAttribute(OTP_SESSION_KEY, otp);
