@@ -1,6 +1,8 @@
 package com.example.full.project.service;
 
 import java.util.Random;
+
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
@@ -13,8 +15,8 @@ public class OtpService {
     private final JavaMailSender mailSender;
     private final String smtpUsername;
 
-    public OtpService(JavaMailSender mailSender, @Value("${spring.mail.username:}") String smtpUsername) {
-        this.mailSender = mailSender;
+    public OtpService(ObjectProvider<JavaMailSender> mailSenderProvider, @Value("${spring.mail.username:}") String smtpUsername) {
+        this.mailSender = mailSenderProvider.getIfAvailable();
         this.smtpUsername = smtpUsername;
     }
 
@@ -24,6 +26,10 @@ public class OtpService {
     }
 
     public void sendOtp(String toEmail, String otp) {
+        if (mailSender == null) {
+            throw new IllegalStateException("SMTP mail sender is unavailable. Ensure spring-boot-starter-mail is present and SMTP env vars are set.");
+        }
+
         if (smtpUsername == null || smtpUsername.isBlank()) {
             throw new IllegalStateException("SMTP is not configured. Set SMTP_USERNAME and SMTP_PASSWORD for Gmail OTP delivery.");
         }
