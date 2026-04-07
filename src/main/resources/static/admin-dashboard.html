@@ -384,8 +384,8 @@
                         <td><strong>${user.role}</strong></td>
                         <td>${createdAt}</td>
                         <td>
-                            <button class="edit-btn" onclick="openEditModal(${user.id}, '${escapeHtml(user.name)}', '${escapeHtml(user.email)}', '${user.role}')">Edit</button>
-                            <button class="delete-btn" onclick="deleteUser(${user.id})">Delete</button>
+                            <button class="edit-btn" onclick="openEditModal('${user.id}', '${escapeHtml(user.name)}', '${escapeHtml(user.email)}', '${user.role}')">Edit</button>
+                            <button class="delete-btn" onclick="deleteUser('${user.id}')">Delete</button>
                         </td>
                     </tr>
                 `;
@@ -515,17 +515,28 @@
             
             try {
                 const response = await fetch(`${API_BASE}/api/users/${id}`, {
-                    method: 'DELETE'
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
                 });
+                
+                const responseText = await response.text();
+                console.log('Delete response status:', response.status, 'body:', responseText);
                 
                 if (response.ok) {
                     showMessage('User deleted successfully!', 'success');
-                    loadUsers();
+                    setTimeout(loadUsers, 500);
                 } else {
-                    showMessage('Error deleting user', 'error');
+                    try {
+                        const error = JSON.parse(responseText);
+                        showMessage('Error: ' + (error.message || responseText), 'error');
+                    } catch {
+                        showMessage('Error deleting user: (' + response.status + ') ' + responseText, 'error');
+                    }
                 }
             } catch (error) {
-                showMessage('Error deleting user: ' + error.message, 'error');
+                console.error('Delete user error:', error);
+                showMessage('Network error: ' + error.message, 'error');
             }
         }
         

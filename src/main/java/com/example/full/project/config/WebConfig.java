@@ -29,7 +29,7 @@ public class WebConfig implements WebMvcConfigurer {
         String[] origins = originSet.toArray(new String[0]);
 
         registry.addMapping("/**")
-            .allowedOriginPatterns(origins)
+            .allowedOrigins(origins)
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true)
