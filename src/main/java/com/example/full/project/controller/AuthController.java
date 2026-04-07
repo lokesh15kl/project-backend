@@ -403,6 +403,53 @@ public class AuthController {
         return verifyOtpInternal(otp, session);
     }
 
+    @PostMapping(value = {"/resendOtp", "/api/auth/resendOtp"}, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public ResponseEntity<?> resendOtp(HttpSession session) {
+        return resendOtpInternal(session);
+    }
+
+    @PostMapping(value = {"/resendOtp", "/api/auth/resendOtp"}, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> resendOtpJson(HttpSession session) {
+        return resendOtpInternal(session);
+    }
+
+    private ResponseEntity<?> resendOtpInternal(HttpSession session) {
+        String pendingName = normalize((String) session.getAttribute(PENDING_NAME_KEY));
+        String pendingEmail = normalize((String) session.getAttribute(PENDING_EMAIL_KEY)).toLowerCase();
+        String pendingPasswordHash = normalize((String) session.getAttribute(PENDING_PASSWORD_HASH_KEY));
+
+        if (pendingName.isBlank() || pendingEmail.isBlank() || pendingPasswordHash.isBlank()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                    "message", "No pending signup found. Please start signup again.",
+                    "success", false));
+        }
+
+        if (userRepository.existsByEmailIgnoreCase(pendingEmail)) {
+            clearOtpSession(session);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
+                    "message", "Email already registered",
+                    "success", false));
+        }
+
+        String otp = otpService.generateOtp();
+        try {
+            otpService.sendOtp(pendingEmail, otp);
+        } catch (RuntimeException ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "message", ex.getMessage(),
+                    "success", false));
+        }
+
+        session.setAttribute(OTP_SESSION_KEY, otp);
+        session.setAttribute(OTP_ISSUED_AT_KEY, Instant.now().toEpochMilli());
+        session.setAttribute(OTP_ATTEMPTS_KEY, 0);
+
+        return ResponseEntity.ok(Map.of(
+                "message", "OTP resent successfully",
+                "success", true,
+                "otpBypassed", false));
+    }
+
     private ResponseEntity<?> verifyOtpInternal(String otp, HttpSession session) {
         String enteredOtp = normalize(otp);
         String savedOtp = (String) session.getAttribute(OTP_SESSION_KEY);

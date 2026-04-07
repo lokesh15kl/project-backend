@@ -5,9 +5,12 @@ import java.util.Random;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 
 @Service
 public class OtpService {
@@ -35,13 +38,19 @@ public class OtpService {
         }
 
         try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(smtpUsername);
-            message.setTo(toEmail);
-            message.setSubject("Your OTP for Career Portal Signup");
-            message.setText("Your OTP is: " + otp + "\n\nThis OTP expires in 5 minutes. Do not share this OTP.");
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, false, "UTF-8");
+            helper.setFrom(smtpUsername);
+            helper.setTo(toEmail);
+            helper.setSubject("Your OTP for Career Portal Signup");
+            helper.setText(
+                    "<div style='font-family:Arial,sans-serif;line-height:1.6'>" +
+                            "<h2>Your OTP is: <span style='color:#ff6b6b'>" + otp + "</span></h2>" +
+                            "<p>This OTP expires in 5 minutes. Do not share this OTP.</p>" +
+                            "</div>",
+                    true);
             mailSender.send(message);
-        } catch (MailException ex) {
+        } catch (MailException | MessagingException ex) {
             throw new RuntimeException("Failed to send OTP email. Verify Gmail app password and SMTP settings.", ex);
         }
     }

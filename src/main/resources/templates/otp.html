@@ -14,7 +14,12 @@
         <button type="submit">Verify OTP</button>
     </form>
 
+    <form action="/resendOtp" method="post" style="margin-top: 12px;">
+        <button type="submit" style="background:#6c757d;">Resend OTP</button>
+    </form>
+
     <p style="color:red;">[[${error}]]</p>
+    <p style="color:green;">[[${message}]]</p>
 </div>
 
 </body>
