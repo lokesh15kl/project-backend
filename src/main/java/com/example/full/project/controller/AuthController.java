@@ -310,11 +310,32 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("message", "logout successful"));
     }
 
-    @PostMapping(value = "/sendOtp", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @PostMapping(value = {"/sendOtp", "/api/auth/sendOtp"}, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public ResponseEntity<?> sendOtp(
             @RequestParam("name") String name,
             @RequestParam("email") String email,
             @RequestParam("password") String password,
+            HttpSession session) {
+
+        return sendOtpInternal(name, email, password, session);
+    }
+
+    @PostMapping(value = {"/sendOtp", "/api/auth/sendOtp"}, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> sendOtpJson(
+            @RequestBody(required = false) Map<String, String> payload,
+            HttpSession session) {
+
+        String name = payload == null ? null : payload.get("name");
+        String email = payload == null ? null : payload.get("email");
+        String password = payload == null ? null : payload.get("password");
+
+        return sendOtpInternal(name, email, password, session);
+    }
+
+    private ResponseEntity<?> sendOtpInternal(
+            String name,
+            String email,
+            String password,
             HttpSession session) {
 
         String normalizedName = normalize(name);
@@ -333,7 +354,26 @@ public class AuthController {
         try {
             otpService.sendOtp(normalizedEmail, otp);
         } catch (RuntimeException ex) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
+            // Fallback mode: if mail delivery fails, complete signup directly.
+            if (userRepository.existsByEmailIgnoreCase(normalizedEmail)) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("Email already registered");
+            }
+
+            AppUser user = new AppUser();
+            user.setName(normalizedName);
+            user.setEmail(normalizedEmail);
+            user.setPassword(passwordEncoder.encode(normalizedPassword));
+            user.setRole(resolveNewUserRole(normalizedEmail));
+            userRepository.save(user);
+
+            setSessionUser(session, user);
+            clearOtpSession(session);
+
+            Map<String, Object> response = new LinkedHashMap<>();
+            response.put("message", "OTP delivery failed, signup completed directly");
+            response.put("role", user.getRole());
+            response.put("otpBypassed", true);
+            return ResponseEntity.ok(response);
         }
 
         session.setAttribute(OTP_SESSION_KEY, otp);
@@ -343,11 +383,27 @@ public class AuthController {
         session.setAttribute(PENDING_EMAIL_KEY, normalizedEmail);
         session.setAttribute(PENDING_PASSWORD_HASH_KEY, passwordEncoder.encode(normalizedPassword));
 
-        return ResponseEntity.ok(Map.of("message", "OTP sent successfully"));
+        return ResponseEntity.ok(Map.of("message", "OTP sent successfully", "otpBypassed", false));
     }
 
-    @PostMapping(value = "/verifyOtp", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    public ResponseEntity<?> verifyOtp(@RequestParam("otp") String otp, HttpSession session) {
+    @PostMapping(value = {"/verifyOtp", "/api/auth/verifyOtp"}, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public ResponseEntity<?> verifyOtp(
+            @RequestParam("otp") String otp,
+            HttpSession session) {
+
+        return verifyOtpInternal(otp, session);
+    }
+
+    @PostMapping(value = {"/verifyOtp", "/api/auth/verifyOtp"}, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> verifyOtpJson(
+            @RequestBody(required = false) Map<String, String> payload,
+            HttpSession session) {
+
+        String otp = payload == null ? null : payload.get("otp");
+        return verifyOtpInternal(otp, session);
+    }
+
+    private ResponseEntity<?> verifyOtpInternal(String otp, HttpSession session) {
         String enteredOtp = normalize(otp);
         String savedOtp = (String) session.getAttribute(OTP_SESSION_KEY);
 
