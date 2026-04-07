@@ -471,7 +471,7 @@
                     </select>
                 </div>
                 <div class="modal-actions">
-                    <button type="button" class="modal-btn modal-cancel" onclick="closeEditModal()">Cancel</button>
+                    <button type="button" class="modal-btn modal-cancel" id="closeModalBtn">Cancel</button>
                     <button type="submit" class="modal-btn modal-save">Save Changes</button>
                 </div>
             </form>
@@ -525,14 +525,16 @@
                         <td>${createdDate}</td>
                         <td>
                             <div class="action-buttons">
-                                <button class="edit-btn" onclick="openEditModal('${user.id}', '${escapeHtml(user.name)}', '${escapeHtml(user.email)}', '${user.role}')">Edit</button>
-                                <button class="delete-btn" onclick="deleteUser('${user.id}', '${escapeHtml(user.name)}')">Delete</button>
+                                <button class="edit-btn" data-user-id="${user.id}" data-user-name="${user.name}" data-user-email="${user.email}" data-user-role="${user.role}">Edit</button>
+                                <button class="delete-btn" data-user-id="${user.id}" data-user-name="${user.name}">Delete</button>
                             </div>
                         </td>
                     `;
                     userTableBody.appendChild(row);
                 });
 
+                // Add event listeners to the buttons
+                addButtonEventListeners();
                 userTable.style.display = 'table';
             })
             .catch(error => {
@@ -540,6 +542,30 @@
                 console.error('Error:', error);
                 errorContainer.innerHTML = '<div class="error-msg">Error loading users: ' + error.message + '</div>';
             });
+    }
+
+    function addButtonEventListeners() {
+        // Edit button listeners
+        document.querySelectorAll('.edit-btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const userId = this.getAttribute('data-user-id');
+                const name = this.getAttribute('data-user-name');
+                const email = this.getAttribute('data-user-email');
+                const role = this.getAttribute('data-user-role');
+                openEditModal(userId, name, email, role);
+            });
+        });
+
+        // Delete button listeners
+        document.querySelectorAll('.delete-btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const userId = this.getAttribute('data-user-id');
+                const userName = this.getAttribute('data-user-name');
+                deleteUserConfirm(userId, userName);
+            });
+        });
     }
 
     function openEditModal(userId, name, email, role) {
@@ -608,7 +634,7 @@
         });
     });
 
-    function deleteUser(userId, userName) {
+    function deleteUserConfirm(userId, userName) {
         if (!confirm(`Are you sure you want to delete user "${userName}"? This action cannot be undone.`)) {
             return;
         }
@@ -649,6 +675,11 @@
         if (e.target === this) {
             closeEditModal();
         }
+    });
+
+    // Close modal on close button click
+    document.getElementById('closeModalBtn').addEventListener('click', function() {
+        closeEditModal();
     });
 </script>
 
