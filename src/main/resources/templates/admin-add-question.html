@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Question</title>
+</head>
+<body>
+
+<h2>Add Question – <span th:text="${category}"></span></h2>
+
+<!-- 🔹 MANUAL QUESTION -->
+<h3>✍️ Add Manually</h3>
+
+<form action="/admin/saveManualQuiz" method="post">
+    <input type="hidden" name="category" th:value="${category}">
+
+    <input name="question" placeholder="Question" required>
+    <input name="option1" placeholder="Option 1" required>
+    <input name="option2" placeholder="Option 2" required>
+    <input name="option3" placeholder="Option 3" required>
+    <input name="option4" placeholder="Option 4" required>
+    <input name="answer" placeholder="Correct Answer" required>
+
+    <button type="submit">Save Question</button>
+</form>
+
+<hr>
+
+<!-- 🔹 CHATGPT / GEMINI -->
+<h3>🤖 Generate using ChatGPT</h3>
+
+<form action="/admin/generateQuizAI" method="post">
+    <input type="hidden" name="category" th:value="${category}">
+
+    <!-- ✅ ADD THIS -->
+    <input type="text" name="quizTitle"
+           placeholder="Quiz Name (e.g. Java Basics)"
+           required>
+
+    <input type="hidden" name="difficulty" value="medium">
+    <input type="number" name="count" value="5" min="1" max="10">
+
+    <button type="submit">Generate with AI</button>
+</form>
+
+
+</body>
+</html>

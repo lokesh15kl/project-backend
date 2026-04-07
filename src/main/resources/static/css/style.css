@@ -1,0 +1,248 @@
+/* ===== COMMON BODY STYLE ===== */
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(120deg, #e0f7fa, #ffffff);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+
+    /* CENTER EVERYTHING */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* ===== MAIN CONTAINER (USED IN ALL PAGES) ===== */
+.container {
+    background: white;
+    padding: 40px;
+    width: 100%;
+    max-width: 450px;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    text-align: center;
+}
+
+/* ===== HEADINGS ===== */
+.container h2 {
+    margin-bottom: 10px;
+    color: #2c3e50;
+}
+
+.container p {
+    color: #666;
+    margin-bottom: 25px;
+}
+
+/* ===== INPUT FIELDS ===== */
+.container input,
+.container select {
+    width: 90%;
+    padding: 12px;
+    margin: 8px 0;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 15px;
+}
+
+/* ===== BUTTONS ===== */
+.btn-admin, .btn-user, .btn-main {
+    padding: 12px 30px;
+    border: none;
+    border-radius: 25px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s;
+    margin-top: 10px;
+}
+
+/* ADMIN BUTTON */
+.btn-admin {
+    background: #6c5ce7;
+    color: white;
+}
+
+.btn-admin:hover {
+    background: #5a4bdc;
+}
+
+/* USER BUTTON */
+.btn-user {
+    background: #2ecc71;
+    color: white;
+}
+
+.btn-user:hover {
+    background: #27ae60;
+}
+
+/* MAIN BUTTON */
+.btn-main {
+    background: #3498db;
+    color: white;
+}
+
+.btn-main:hover {
+    background: #2980b9;
+}
+
+/* ===== LINKS ===== */
+.link {
+    text-decoration: none;
+    color: #3498db;
+    font-weight: bold;
+}
+
+.link:hover {
+    text-decoration: underline;
+}
+
+/* ===== BACK LINK ===== */
+.back-link {
+    display: inline-block;
+    margin-top: 20px;
+    color: #6c5ce7;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+/* ===== DASHBOARD CENTER FIX ===== */
+.dashboard-container {
+    max-width: 1100px;
+    width: 100%;
+    text-align: center;
+}
+
+/* QUIZ GRID */
+.quiz-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 30px;
+    padding: 20px;
+}
+
+/* QUIZ CARD */
+.quiz-card {
+    background: white;
+    border-radius: 15px;
+    padding: 30px 20px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.quiz-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.2);
+}
+
+.quiz-card i {
+    font-size: 50px;
+    margin-bottom: 15px;
+}
+
+.quiz-card h3 {
+    margin: 15px 0;
+    color: #333;
+}
+
+/* START BUTTON */
+.btn-start {
+    margin-top: 15px;
+    padding: 10px 25px;
+    border: none;
+    border-radius: 20px;
+    background: #2ecc71;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.btn-start:hover {
+    background: #27ae60;
+}
+
+/* CATEGORY COLORS */
+.personality i { color: #8e44ad; }
+.aptitude i { color: #2980b9; }
+.technical i { color: #16a085; }
+.logical i { color: #f39c12; }
+.interest i { color: #e74c3c; }
+/* ===== VERTICAL BUTTON GROUP ===== */
+.btn-group-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    margin-top: 25px;
+    align-items: center;
+}
+
+/* LOGOUT LINK STYLE */
+.logout-link {
+    margin-top: 15px;
+    font-size: 15px;
+    color: #e74c3c;
+}
+
+.logout-link:hover {
+    color: #c0392b;
+}
+/* ===== FADE IN PAGE ===== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+body {
+    animation: fadeIn 0.6s ease-in-out;
+}
+
+/* ===== BUTTON HOVER EFFECT ===== */
+button {
+    transition: all 0.25s ease;
+}
+
+button:hover {
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+/* ===== CARD / BOX HOVER ===== */
+.quiz-box, .container {
+    transition: all 0.3s ease;
+}
+
+.quiz-box:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+}
+
+/* ===== INPUT FOCUS EFFECT ===== */
+input, select {
+    transition: border 0.2s ease, box-shadow 0.2s ease;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border: 2px solid #6a1b9a;
+    box-shadow: 0 0 8px rgba(106, 27, 154, 0.4);
+}
+
+/* ===== SUCCESS / ERROR MESSAGE ===== */
+.success-msg {
+    color: #2e7d32;
+    font-weight: bold;
+    animation: fadeIn 0.5s ease;
+}
+
+.error-msg {
+    color: #c62828;
+    font-weight: bold;
+    animation: fadeIn 0.5s ease;
+}
+

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Add Quiz Question</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<div class="container">
+    <h2>Add Quiz Question 👨‍💼</h2>
+    <p>Create quizzes and add multiple questions</p>
+
+    <!-- SUCCESS MESSAGE -->
+    <p style="color:green; font-weight:bold;" th:if="${msg}" th:text="${msg}"></p>
+
+    <!-- ERROR MESSAGE -->
+    <p style="color:red; font-weight:bold;" th:if="${error}" th:text="${error}"></p>
+
+	<form action="/admin/addQuiz" method="post">
+
+	    <input type="text" name="quizName" placeholder="Quiz Name (Quiz 1 / Java Test)" required>
+
+	    <select name="section" required>
+	        <option value="IT">IT</option>
+	        <option value="MANAGEMENT">MANAGEMENT</option>
+	        <option value="CREATIVE">CREATIVE</option>
+	    </select>
+
+	    <input type="text" name="question" placeholder="Question" required>
+	    <input type="text" name="option1" placeholder="Option 1" required>
+	    <input type="text" name="option2" placeholder="Option 2" required>
+	    <input type="text" name="option3" placeholder="Option 3" required>
+	    <input type="text" name="option4" placeholder="Option 4" required>
+	    <input type="text" name="answer" placeholder="Correct Answer" required>
+
+	    <button type="submit">Save Quiz</button>
+	</form>
+
+    <br><br>
+
+    <a class="link" href="/adminDashboard">⬅ Back to Admin Panel</a>
+</div>
+
+</body>
+</html>
+

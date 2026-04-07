@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>AI Quiz Practice</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        body {
+            background: linear-gradient(140deg, #edf4ff, #f6fbff);
+        }
+
+        .container {
+            width: min(860px, 94vw);
+            max-width: 860px;
+            border-radius: 18px;
+            border: 1px solid #e1e9f8;
+            box-shadow: 0 22px 55px rgba(17, 38, 85, 0.14);
+            padding: 26px;
+        }
+
+        .title {
+            margin-bottom: 6px;
+            color: #1f3558;
+            font-size: 36px;
+        }
+
+        .subtitle {
+            color: #5b6d89;
+            margin-bottom: 16px;
+        }
+
+        .form-grid {
+            display: grid;
+            gap: 10px;
+            max-width: 520px;
+            margin: 0 auto;
+        }
+
+        .generate-btn {
+            margin-top: 8px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #2f6df6, #1f5ee5);
+            color: white;
+            font-weight: 700;
+            padding: 11px 14px;
+            cursor: pointer;
+        }
+
+        .generate-btn:hover {
+            box-shadow: 0 8px 20px rgba(31, 94, 229, 0.35);
+        }
+
+        .quiz-grid {
+            display: grid;
+            gap: 12px;
+            margin-top: 14px;
+            text-align: left;
+        }
+
+        .question-card {
+            border: 1px solid #dfe8fb;
+            border-radius: 12px;
+            background: #fbfdff;
+            padding: 14px;
+        }
+
+        .question-title {
+            margin: 0 0 8px;
+            color: #1f3558;
+            font-weight: 700;
+        }
+
+        .option {
+            margin: 6px 0;
+            color: #445673;
+        }
+
+        .answer {
+            margin-top: 8px;
+            color: #1f7b4d;
+            font-weight: 700;
+        }
+
+        .save-btn {
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #34b567, #269651);
+            color: white;
+            font-weight: 700;
+            padding: 10px 14px;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+
+        .save-btn:hover {
+            box-shadow: 0 8px 20px rgba(38, 150, 81, 0.3);
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 16px;
+            text-decoration: none;
+            font-weight: 700;
+            color: #375dc8;
+            background: #eef3ff;
+            border: 1px solid #dbe5ff;
+            border-radius: 999px;
+            padding: 8px 12px;
+        }
+
+        details {
+            margin-top: 12px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 class="title">Practice Quiz using AI 🤖</h2>
+    <p class="subtitle">Generate instant practice questions and save them as assessments.</p>
+
+    <!-- GENERATE FORM -->
+    <form th:action="@{/user/generateAIQuiz}" method="post" class="form-grid">
+        <label>Quiz Name</label>
+        <input type="text" name="quizTitle" required>
+
+        <label>Topic</label>
+        <input type="text" name="topic" required>
+
+        <button class="generate-btn" type="submit">Generate Quiz</button>
+    </form>
+	<p th:if="${error}" class="error-msg" th:text="${error}"></p>
+	<p th:if="${msg}" class="success-msg" th:text="${msg}"></p>
+
+    <!-- SHOW GENERATED QUIZ -->
+    <div th:if="${aiResponse}">
+        <h3>Generated Questions</h3>
+
+        <div id="quizPreview" class="quiz-grid"></div>
+
+        <details>
+            <summary>Show raw AI JSON</summary>
+            <pre id="aiPreview" th:text="${aiResponse}" style="white-space: pre-wrap;"></pre>
+        </details>
+
+        <!-- SAVE -->
+        <form th:action="@{/user/saveAIQuiz}" method="post">
+            <input type="hidden" name="quizTitle" th:value="${quizTitle}">
+            <input type="hidden" name="category" value="Practice">
+            <textarea name="aiResponse" th:text="${aiResponse}" hidden></textarea>
+
+            <button class="save-btn" type="submit">Save Quiz</button>
+        </form>
+    </div>
+
+    <br>
+    <a class="back-link" href="/select-category">⬅ Back</a>
+</div>
+<script>
+    const generateForm = document.querySelector('form[action="/user/generateAIQuiz"]');
+    if (generateForm) {
+        generateForm.addEventListener("submit", () => {
+            const btn = generateForm.querySelector("button");
+            btn.innerText = "Generating...";
+            btn.disabled = true;
+        });
+    }
+
+    (function () {
+        const preElement = document.getElementById("aiPreview");
+        const host = document.getElementById("quizPreview");
+
+        if (!preElement || !host) return;
+
+        const raw = (preElement.textContent || "").trim();
+        if (!raw) {
+            host.innerHTML = "<p style='color:#5d6f8b;'>No questions generated.</p>";
+            return;
+        }
+
+        let normalized = raw;
+        const firstBracket = normalized.indexOf("[");
+        const lastBracket = normalized.lastIndexOf("]");
+        if (firstBracket >= 0 && lastBracket > firstBracket) {
+            normalized = normalized.slice(firstBracket, lastBracket + 1);
+        }
+
+        normalized = normalized.replace(/^```json/i, "").replace(/```$/i, "").trim();
+
+        let parsed;
+        try {
+            console.log("Raw JSON:", raw.substring(0, 300));
+            console.log("Normalized:", normalized.substring(0, 300));
+            parsed = JSON.parse(normalized);
+        } catch (err) {
+            console.error("JSON parse error:", err);
+            console.error("Raw text:", raw.substring(0, 300));
+            console.error("Normalized:", normalized.substring(0, 300));
+            host.innerHTML = "<p style='color:#b00020;font-weight:700;'>Could not parse AI JSON. Please view raw response below.</p>";
+            return;
+        }
+
+        if (!Array.isArray(parsed) || parsed.length === 0) {
+            host.innerHTML = "<p style='color:#5d6f8b;'>No questions generated.</p>";
+            return;
+        }
+
+        parsed.forEach((item, index) => {
+            const card = document.createElement("article");
+            card.className = "question-card";
+
+            const question = item.question || `Question ${index + 1}`;
+            const options = [item.option1, item.option2, item.option3, item.option4].filter(Boolean);
+            const answer = item.answer || item.correctAnswer || "Not provided";
+
+            card.innerHTML = `
+                <p class="question-title">${index + 1}. ${question}</p>
+                ${options.map((option, idx) => `<p class="option">${String.fromCharCode(65 + idx)}. ${option}</p>`).join("")}
+                <p class="answer">Answer: ${answer}</p>
+            `;
+
+            host.appendChild(card);
+        });
+    })();
+</script>
+
+
+</body>
+</html>

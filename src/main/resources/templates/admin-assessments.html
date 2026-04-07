@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Manage Assessments</title>
+    <link rel="stylesheet" href="/css/style.css">
+
+    <style>
+        .layout {
+            display: flex;
+            gap: 30px;
+        }
+
+        .left-panel {
+            width: 30%;
+        }
+
+        .right-panel {
+            width: 70%;
+        }
+
+        .quiz-box {
+            background: #34c759;
+            color: white;
+            padding: 18px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: block;
+        }
+
+        .quiz-box:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+
+<body>
+
+<h2>Manage Assessments</h2>
+
+<div class="layout">
+
+    <!-- LEFT: ASSESSMENT CATEGORIES -->
+    <div class="left-panel">
+        <h3>Assessments</h3>
+
+        <a href="/admin/assessments?category=Personality" class="quiz-box">
+            Personality Assessment
+        </a>
+
+        <a href="/admin/assessments?category=Aptitude" class="quiz-box">
+            Aptitude Assessment
+        </a>
+
+        <a href="/admin/assessments?category=Technical" class="quiz-box">
+            Technical Assessment
+        </a>
+
+        <a href="/admin/assessments?category=Logical" class="quiz-box">
+            Logical Assessment
+        </a>
+
+        <a href="/admin/assessments?category=Career" class="quiz-box">
+            Career Interest Assessment
+        </a>
+    </div>
+
+    <!-- RIGHT: QUESTIONS (CURRENT CATEGORY) -->
+    <div class="right-panel">
+        <h3 th:text="${category} + ' Questions'"></h3>
+
+        <a th:href="@{/admin/addQuestion(category=${category})}">
+            <button>➕ Add Question</button>
+        </a>
+
+        <ul>
+            <li th:each="q : ${questions}">
+                <b th:text="${q.question}"></b>
+            </li>
+        </ul>
+    </div>
+
+</div>
+
+</body>
+</html>

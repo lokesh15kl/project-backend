@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quiz Inventory Viewer</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1d4ed8);
+      min-height: 100vh;
+      color: #0f172a;
+    }
+    .wrap {
+      max-width: 1200px;
+      margin: 24px auto;
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 18px 35px rgba(0, 0, 0, 0.25);
+      padding: 20px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+    .sub {
+      margin: 8px 0 16px;
+      color: #475569;
+      font-size: 14px;
+    }
+    .toolbar {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    input, select, button {
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 14px;
+    }
+    button {
+      background: #2563eb;
+      border: none;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:hover { background: #1e40af; }
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(180px, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .kpi {
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+      border-radius: 10px;
+      padding: 12px;
+    }
+    .kpi .label { color: #64748b; font-size: 12px; }
+    .kpi .value { color: #0f172a; font-size: 22px; font-weight: 700; margin-top: 4px; }
+    .error {
+      display: none;
+      margin-bottom: 12px;
+      border: 1px solid #fecaca;
+      background: #fee2e2;
+      color: #991b1b;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 14px;
+    }
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 800px;
+    }
+    th, td {
+      text-align: left;
+      padding: 10px;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 13px;
+    }
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: #f8fafc;
+    }
+    .chip {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #dbeafe;
+      color: #1e3a8a;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .empty {
+      text-align: center;
+      padding: 18px;
+      color: #64748b;
+      font-size: 14px;
+    }
+    .links {
+      margin-top: 10px;
+      font-size: 13px;
+    }
+    .links a {
+      color: #1d4ed8;
+      text-decoration: none;
+    }
+    .links a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Quiz Inventory Viewer</h1>
+    <p class="sub">All quizzes currently stored in backend MySQL with question counts.</p>
+
+    <div class="toolbar">
+      <select id="categoryFilter">
+        <option value="">All categories</option>
+      </select>
+      <input id="searchInput" type="text" placeholder="Search by quiz title" />
+      <button id="refreshBtn" type="button">Refresh</button>
+    </div>
+
+    <div class="kpis">
+      <div class="kpi"><div class="label">Total Quizzes</div><div id="kpiTotal" class="value">0</div></div>
+      <div class="kpi"><div class="label">Total Questions</div><div id="kpiQuestions" class="value">0</div></div>
+      <div class="kpi"><div class="label">Visible Rows</div><div id="kpiVisible" class="value">0</div></div>
+    </div>
+
+    <div id="errorBox" class="error"></div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>S.No</th>
+            <th>Category</th>
+            <th>Quiz Title</th>
+            <th>Questions</th>
+            <th>Created At</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+
+    <div class="links">
+      API: <a href="/api/admin/quizzes/overview" target="_blank" rel="noreferrer">/api/admin/quizzes/overview</a>
+    </div>
+  </div>
+
+  <script>
+    const rowsEl = document.getElementById("rows");
+    const categoryFilterEl = document.getElementById("categoryFilter");
+    const searchInputEl = document.getElementById("searchInput");
+    const refreshBtnEl = document.getElementById("refreshBtn");
+    const errorBoxEl = document.getElementById("errorBox");
+
+    const kpiTotalEl = document.getElementById("kpiTotal");
+    const kpiQuestionsEl = document.getElementById("kpiQuestions");
+    const kpiVisibleEl = document.getElementById("kpiVisible");
+
+    let allRows = [];
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function showError(message) {
+      errorBoxEl.style.display = "block";
+      errorBoxEl.textContent = message;
+    }
+
+    function clearError() {
+      errorBoxEl.style.display = "none";
+      errorBoxEl.textContent = "";
+    }
+
+    async function loadData() {
+      clearError();
+
+      try {
+        const response = await fetch("/api/admin/quizzes/overview", { credentials: "include" });
+        if (!response.ok) {
+          throw new Error("HTTP " + response.status);
+        }
+
+        const data = await response.json();
+        allRows = Array.isArray(data) ? data : [];
+
+        const categories = Array.from(new Set(allRows.map(item => String(item.category || "").trim()).filter(Boolean))).sort();
+        const current = categoryFilterEl.value;
+        categoryFilterEl.innerHTML = '<option value="">All categories</option>' +
+          categories.map(item => '<option value="' + escapeHtml(item) + '">' + escapeHtml(item) + '</option>').join("");
+
+        if (categories.includes(current)) {
+          categoryFilterEl.value = current;
+        }
+
+        render();
+      } catch (error) {
+        allRows = [];
+        render();
+        showError("Failed to load quizzes from backend: " + (error.message || error));
+      }
+    }
+
+    function render() {
+      const selectedCategory = String(categoryFilterEl.value || "").trim().toLowerCase();
+      const search = String(searchInputEl.value || "").trim().toLowerCase();
+
+      const visibleRows = allRows.filter(item => {
+        const category = String(item.category || "").toLowerCase();
+        const quizTitle = String(item.quizTitle || "").toLowerCase();
+
+        const categoryOk = !selectedCategory || category === selectedCategory;
+        const searchOk = !search || quizTitle.includes(search);
+
+        return categoryOk && searchOk;
+      });
+
+      kpiTotalEl.textContent = String(allRows.length);
+      kpiQuestionsEl.textContent = String(allRows.reduce((sum, item) => sum + (Number(item.questionCount) || 0), 0));
+      kpiVisibleEl.textContent = String(visibleRows.length);
+
+      if (visibleRows.length === 0) {
+        rowsEl.innerHTML = '<tr><td class="empty" colspan="5">No quizzes found.</td></tr>';
+        return;
+      }
+
+      rowsEl.innerHTML = visibleRows.map((item, index) => (
+        '<tr>' +
+          '<td>' + (index + 1) + '</td>' +
+          '<td><span class="chip">' + escapeHtml(item.category) + '</span></td>' +
+          '<td>' + escapeHtml(item.quizTitle) + '</td>' +
+          '<td><strong>' + (Number(item.questionCount) || 0) + '</strong></td>' +
+          '<td>' + escapeHtml(item.createdAt) + '</td>' +
+        '</tr>'
+      )).join('');
+    }
+
+    categoryFilterEl.addEventListener("change", render);
+    searchInputEl.addEventListener("input", render);
+    refreshBtnEl.addEventListener("click", loadData);
+
+    loadData();
+  </script>
+</body>
+</html>

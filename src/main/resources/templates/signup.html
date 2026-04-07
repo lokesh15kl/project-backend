@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="/css/style.css">
+
+    <!-- Simple password match validation -->
+    <script>
+        function checkPassword() {
+            let pass = document.getElementById("password").value;
+            let confirm = document.getElementById("confirm").value;
+
+            if (pass !== confirm) {
+                alert("Passwords do not match!");
+                return false;
+            }
+            return true;
+        }
+    </script>
+</head>
+<body>
+
+<div class="container">
+    <h2>Create Account</h2>
+    <p>Register to start your career assessment</p>
+
+    <!-- Send OTP to backend -->
+    <form action="/sendOtp" method="post" onsubmit="return checkPassword()">
+
+        <!-- ROLE FIXED AS USER -->
+        <input type="hidden" name="role" value="USER">
+
+        <!-- NAME -->
+        <input type="text" name="name" placeholder="Enter your name" required><br><br>
+
+        <!-- EMAIL -->
+        <input type="email" name="email" placeholder="Enter your email" required><br><br>
+
+        <!-- PASSWORD -->
+        <input type="password" id="password" name="password" placeholder="Create password" required><br><br>
+
+        <!-- CONFIRM PASSWORD -->
+        <input type="password" id="confirm" placeholder="Confirm password" required><br><br>
+
+        <button class="btn-main" type="submit">Send OTP</button>
+    </form>
+
+    <p style="margin-top:20px;">
+        Already have an account? 
+        <a class="link" href="/login">Login</a>
+    </p>
+
+    <p>
+        <a class="link" href="/">Back to Home</a>
+    </p>
+</div>
+
+</body>
+</html>

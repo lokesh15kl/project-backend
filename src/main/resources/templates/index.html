@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Career Assessment Tool</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<div class="container">
+    <h1>Career Assessment Tool</h1>
+    <p>Discover your strengths and suitable career paths</p>
+
+    <div class="btn-group-vertical">
+        <a href="/login">
+            <button class="btn-user">Login</button>
+        </a>
+
+        <a href="/signup">
+            <button class="btn-main">New User? Sign Up</button>
+        </a>
+    </div>
+</div>
+<script>
+    document.querySelectorAll("a").forEach(link => {
+        link.addEventListener("click", e => {
+            document.body.style.opacity = "0";
+        });
+    });
+</script>
+
+
+</body>
+</html>

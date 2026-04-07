@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Login</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+	<label>CAPTCHA: <b th:text="${captchaQuestion}"></b></label>
+		<input type="text" name="captcha" placeholder="Enter answer" required>
+
+
+<div class="container">
+    <h2>User Login</h2>
+
+    <form action="/userDashboard" method="get">
+        <input type="email" placeholder="Enter Email" required>
+        <input type="password" placeholder="Enter Password" required>
+
+        <button class="btn-user" type="submit">Login</button>
+    </form>
+	
+    <a class="link" href="/signup">Create new account</a>
+</div>
+
+</body>
+</html>

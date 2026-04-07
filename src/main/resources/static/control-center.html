@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backend Designer Home</title>
+    <style>
+        :root {
+            --bg-1: #eef3f6;
+            --bg-2: #e6edf2;
+            --card: #ffffff;
+            --text: #10202d;
+            --muted: #4c6172;
+            --line: #d1dee8;
+            --accent: #0f6b64;
+            --accent-2: #0b4e49;
+            --shadow: 0 14px 34px rgba(12, 23, 35, 0.12);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Trebuchet MS", "Segoe UI", Tahoma, sans-serif;
+            color: var(--text);
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at 0 0, #d8ece7 0, transparent 36%),
+                radial-gradient(circle at 100% 100%, #dce7f1 0, transparent 42%),
+                linear-gradient(160deg, var(--bg-1), var(--bg-2));
+        }
+
+        .container {
+            width: min(1100px, 92vw);
+            margin: 42px auto;
+            padding: 20px;
+        }
+
+        .hidden-until-auth {
+            display: none;
+        }
+
+        .hero {
+            background: linear-gradient(130deg, #115d58 0%, #0b4e49 100%);
+            color: #f7fffe;
+            border-radius: 18px;
+            box-shadow: var(--shadow);
+            padding: 32px 30px;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::after {
+            content: "";
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            right: -60px;
+            top: -70px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.16), transparent 65%);
+            pointer-events: none;
+        }
+
+        .hero h1 {
+            margin: 0;
+            font-size: clamp(1.6rem, 4vw, 2.35rem);
+            letter-spacing: 0.3px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero p {
+            margin: 12px 0 0;
+            color: #ddf2ed;
+            line-height: 1.5;
+            font-size: 1rem;
+            position: relative;
+            z-index: 1;
+            max-width: 820px;
+        }
+
+        .hero-actions {
+            margin-top: 18px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-cta {
+            display: inline-block;
+            text-decoration: none;
+            background: #eaf7f3;
+            color: #0b4e49;
+            border: 1px solid rgba(255, 255, 255, 0.38);
+            border-radius: 11px;
+            padding: 10px 14px;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+            transition: transform 0.15s ease, background 0.2s ease;
+        }
+
+        .hero-cta:hover {
+            transform: translateY(-2px);
+            background: #ffffff;
+        }
+
+        .section {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            padding: 20px;
+            margin-top: 16px;
+        }
+
+        .section h2 {
+            margin: 0 0 12px;
+            font-size: 1.22rem;
+            letter-spacing: 0.2px;
+        }
+
+        .section p {
+            margin: 0 0 14px;
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        .link-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 12px;
+        }
+
+        .section-link {
+            display: inline-block;
+            background: #f7fbfc;
+            border: 1px solid #c5d8e6;
+            color: #0f6b64;
+            text-decoration: none;
+            padding: 13px 14px;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: transform 0.15s ease, background 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        .section-link:hover {
+            transform: translateY(-2px);
+            background: #eef7f9;
+            border-color: #a8cddf;
+            box-shadow: 0 8px 18px rgba(15, 75, 110, 0.14);
+        }
+
+        @media (max-width: 700px) {
+            .container {
+                margin: 22px auto;
+                padding: 12px;
+            }
+
+            .section-link {
+                width: 100%;
+            }
+
+            .hero {
+                padding: 24px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main id="controlCenter" class="container hidden-until-auth">
+        <section class="hero">
+            <h1>Backend Control Center</h1>
+            <p>Quick access to key backend pages and core APIs for local development and testing.</p>
+            <div class="hero-actions">
+                <a class="hero-cta" href="/designer-login.html">Designer Login</a>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Pages</h2>
+            <p>Open operational screens for content and result management.</p>
+            <div class="link-grid">
+                <a class="section-link" href="/admin-dashboard.html">Open Admin Dashboard Page</a>
+                <a class="section-link" href="/questions-view.html">Open Questions Page</a>
+                <a class="section-link" href="/quizzes-view.html">Open Quizzes Page</a>
+                <a class="section-link" href="/results-view.html">Open Results Page</a>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Core APIs</h2>
+            <p>Direct endpoints for health, users, and analytics checks.</p>
+            <div class="link-grid">
+                <a class="section-link" href="/api/users">Open Users API</a>
+                <a class="section-link" href="/api/health">Open Health API</a>
+                <a class="section-link" href="/api/admin/analytics">Open Admin Analytics API</a>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        (async function enforceAdminLogin() {
+            try {
+                const response = await fetch('/api/auth/me', { credentials: 'include' });
+                if (!response.ok) {
+                    window.location.replace('/designer-login.html');
+                    return;
+                }
+
+                const user = await response.json();
+                if ((user.role || '').toUpperCase() !== 'ADMIN') {
+                    window.location.replace('/designer-login.html');
+                    return;
+                }
+
+                const root = document.getElementById('controlCenter');
+                if (root) {
+                    root.classList.remove('hidden-until-auth');
+                }
+            } catch (error) {
+                window.location.replace('/designer-login.html');
+            }
+        })();
+    </script>
+</body>
+</html>

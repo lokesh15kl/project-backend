@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Select Quiz</title>
+    <link rel="stylesheet" href="/css/style.css">
+
+    <style>
+        .quiz-list {
+            margin-top: 20px;
+        }
+
+        .quiz-item {
+            display: block;
+            background: #34c759;
+            color: white;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .quiz-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h2>Select a Quiz 📝</h2>
+    <p>Choose one quiz to start your assessment</p>
+
+    <!-- ERROR MESSAGE -->
+    <p style="color:red; font-weight:bold;"
+       th:if="${error}"
+       th:text="${error}">
+    </p>
+
+    <!-- QUIZ LIST -->
+    <div class="quiz-list" th:if="${quizNames}">
+        <a th:each="qname : ${quizNames}"
+           th:href="@{/attemptQuiz(category=${category}, quizTitle=${qname})}"
+           th:text="${qname}"
+           class="quiz-item">
+        </a>
+    </div>
+
+    <br>
+    <a class="link" href="/select-category">⬅ Back</a>
+
+</div>
+
+</body>
+</html>

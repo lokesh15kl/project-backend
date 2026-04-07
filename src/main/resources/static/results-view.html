@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Results Viewer</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Segoe UI, Arial, sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e3a8a);
+      color: #111827;
+      min-height: 100vh;
+    }
+    .wrap {
+      max-width: 1250px;
+      margin: 24px auto;
+      background: #ffffff;
+      border-radius: 14px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.28);
+      padding: 20px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      color: #0f172a;
+    }
+    .sub {
+      margin: 6px 0 16px;
+      color: #475569;
+      font-size: 14px;
+    }
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    .toolbar button, .toolbar input, .toolbar select {
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 14px;
+    }
+    .toolbar button {
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .toolbar button:hover { background: #1d4ed8; }
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(150px, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .kpi {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 12px;
+    }
+    .kpi .label { font-size: 12px; color: #64748b; }
+    .kpi .value { font-size: 22px; font-weight: 700; color: #0f172a; margin-top: 4px; }
+    .panel {
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+    .panel-head {
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 10px 12px;
+      font-weight: 600;
+      color: #1e293b;
+    }
+    .panel-body { padding: 10px 12px; }
+    .bars {
+      display: grid;
+      gap: 8px;
+    }
+    .bar-row {
+      display: grid;
+      grid-template-columns: 180px 1fr 55px;
+      gap: 8px;
+      align-items: center;
+      font-size: 13px;
+    }
+    .track {
+      height: 12px;
+      border-radius: 999px;
+      background: #e2e8f0;
+      overflow: hidden;
+    }
+    .fill {
+      height: 100%;
+      background: linear-gradient(90deg, #2563eb, #0ea5e9);
+      border-radius: 999px;
+    }
+    .error {
+      display: none;
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+    .table-wrap {
+      overflow: auto;
+      border-top: 1px solid #e2e8f0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 900px;
+    }
+    th, td {
+      text-align: left;
+      padding: 10px;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 13px;
+      vertical-align: top;
+    }
+    th {
+      position: sticky;
+      top: 0;
+      background: #f8fafc;
+      z-index: 2;
+    }
+    .muted { color: #64748b; }
+    .chip {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #dbeafe;
+      color: #1e3a8a;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .empty {
+      padding: 16px;
+      text-align: center;
+      color: #64748b;
+      font-size: 14px;
+    }
+    .links {
+      margin-top: 8px;
+      font-size: 13px;
+    }
+    .links a { color: #1d4ed8; text-decoration: none; }
+    .links a:hover { text-decoration: underline; }
+    @media (max-width: 900px) {
+      .kpis { grid-template-columns: repeat(2, minmax(130px, 1fr)); }
+      .bar-row { grid-template-columns: 120px 1fr 45px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Results Viewer</h1>
+    <p class="sub">Readable backend results view (no raw JSON). Refresh any time to load latest saved attempts.</p>
+
+    <div class="toolbar">
+      <button id="refreshBtn" type="button">Refresh</button>
+      <select id="categoryFilter">
+        <option value="">All Categories</option>
+      </select>
+      <input id="searchInput" type="text" placeholder="Search by email or quiz title" />
+    </div>
+
+    <div id="errorBox" class="error"></div>
+
+    <div class="kpis">
+      <div class="kpi"><div class="label">Total Users</div><div id="kpiUsers" class="value">0</div></div>
+      <div class="kpi"><div class="label">Total Attempts</div><div id="kpiAttempts" class="value">0</div></div>
+      <div class="kpi"><div class="label">Average Score</div><div id="kpiAvg" class="value">0.00</div></div>
+      <div class="kpi"><div class="label">Visible Rows</div><div id="kpiVisible" class="value">0</div></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">Attempts by Category</div>
+      <div id="attemptBars" class="panel-body bars"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">Average Score by Category</div>
+      <div id="avgBars" class="panel-body bars"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">Result Records</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>S.No</th>
+              <th>Email</th>
+              <th>Category</th>
+              <th>Quiz</th>
+              <th>Score</th>
+              <th>Total</th>
+              <th>Attempted At</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="links">
+      Raw APIs: <a href="/api/results" target="_blank" rel="noreferrer">/api/results</a> |
+      <a href="/api/admin/scores" target="_blank" rel="noreferrer">/api/admin/scores</a> |
+      <a href="/api/admin/analytics" target="_blank" rel="noreferrer">/api/admin/analytics</a>
+    </div>
+  </div>
+
+  <script>
+    const rowsEl = document.getElementById('rows');
+    const categoryFilterEl = document.getElementById('categoryFilter');
+    const searchInputEl = document.getElementById('searchInput');
+    const refreshBtnEl = document.getElementById('refreshBtn');
+    const errorBoxEl = document.getElementById('errorBox');
+    const attemptBarsEl = document.getElementById('attemptBars');
+    const avgBarsEl = document.getElementById('avgBars');
+
+    const kpiUsersEl = document.getElementById('kpiUsers');
+    const kpiAttemptsEl = document.getElementById('kpiAttempts');
+    const kpiAvgEl = document.getElementById('kpiAvg');
+    const kpiVisibleEl = document.getElementById('kpiVisible');
+
+    let allRows = [];
+    let analytics = null;
+
+    function escapeHtml(text) {
+      return String(text || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function showError(message) {
+      errorBoxEl.style.display = 'block';
+      errorBoxEl.textContent = message;
+    }
+
+    function clearError() {
+      errorBoxEl.style.display = 'none';
+      errorBoxEl.textContent = '';
+    }
+
+    async function loadData() {
+      clearError();
+      try {
+        const [resultsRes, analyticsRes] = await Promise.all([
+          fetch('/api/results', { credentials: 'include' }),
+          fetch('/api/admin/analytics', { credentials: 'include' })
+        ]);
+
+        const resultsData = resultsRes.ok ? await resultsRes.json() : [];
+        let analyticsData = null;
+        if (analyticsRes.ok) {
+          analyticsData = await analyticsRes.json();
+        } else {
+          const fallback = await analyticsRes.json().catch(() => ({}));
+          if (fallback && fallback.message) {
+            showError('Analytics: ' + fallback.message + '. Results are still shown below.');
+          }
+        }
+
+        allRows = Array.isArray(resultsData) ? resultsData : [];
+        analytics = analyticsData;
+
+        buildCategoryFilter();
+        render();
+      } catch (error) {
+        allRows = [];
+        analytics = null;
+        render();
+        showError('Failed to load backend data: ' + (error.message || error));
+      }
+    }
+
+    function buildCategoryFilter() {
+      const categories = Array.from(new Set(allRows.map(item => String(item.category || '').trim()).filter(Boolean))).sort();
+      const current = categoryFilterEl.value;
+      categoryFilterEl.innerHTML = '<option value="">All Categories</option>' +
+        categories.map(c => '<option value="' + escapeHtml(c) + '">' + escapeHtml(c) + '</option>').join('');
+
+      if (categories.includes(current)) {
+        categoryFilterEl.value = current;
+      }
+    }
+
+    function renderBars(container, dataMap, formatter) {
+      const entries = Object.entries(dataMap || {});
+      if (entries.length === 0) {
+        container.innerHTML = '<div class="empty">No data available</div>';
+        return;
+      }
+
+      const maxVal = Math.max(...entries.map(([, v]) => Number(v) || 0), 1);
+      container.innerHTML = entries.map(([label, value]) => {
+        const numeric = Number(value) || 0;
+        const width = Math.max(6, (numeric / maxVal) * 100);
+        const pretty = formatter ? formatter(numeric) : String(numeric);
+        return '<div class="bar-row">' +
+          '<div>' + escapeHtml(label) + '</div>' +
+          '<div class="track"><div class="fill" style="width:' + width + '%"></div></div>' +
+          '<div><strong>' + escapeHtml(pretty) + '</strong></div>' +
+          '</div>';
+      }).join('');
+    }
+
+    function render() {
+      const categoryFilter = String(categoryFilterEl.value || '').trim().toLowerCase();
+      const search = String(searchInputEl.value || '').trim().toLowerCase();
+
+      const visible = allRows.filter(item => {
+        const cat = String(item.category || '').toLowerCase();
+        const email = String(item.email || '').toLowerCase();
+        const quiz = String(item.quizTitle || '').toLowerCase();
+
+        const categoryOk = !categoryFilter || cat === categoryFilter;
+        const searchOk = !search || email.includes(search) || quiz.includes(search);
+        return categoryOk && searchOk;
+      });
+
+      kpiVisibleEl.textContent = String(visible.length);
+      kpiAttemptsEl.textContent = String(analytics?.totalAttempts ?? allRows.length ?? 0);
+      kpiUsersEl.textContent = String(analytics?.totalUsers ?? 0);
+      kpiAvgEl.textContent = Number(analytics?.averageScore || 0).toFixed(2);
+
+      renderBars(attemptBarsEl, analytics?.attemptsByCategory || {}, (v) => String(Math.round(v)));
+      renderBars(avgBarsEl, analytics?.averageByCategory || {}, (v) => Number(v).toFixed(2));
+
+      if (visible.length === 0) {
+        rowsEl.innerHTML = '<tr><td colspan="7" class="empty">No results found for current filter.</td></tr>';
+        return;
+      }
+
+      rowsEl.innerHTML = visible.map((item, index) => {
+        const score = Number(item.score || 0);
+        const total = Number(item.totalQuestions || 0);
+        return '<tr>' +
+          '<td>' + (index + 1) + '</td>' +
+          '<td>' + escapeHtml(item.email) + '</td>' +
+          '<td><span class="chip">' + escapeHtml(item.category) + '</span></td>' +
+          '<td>' + escapeHtml(item.quizTitle) + '</td>' +
+          '<td><strong>' + score + '</strong></td>' +
+          '<td>' + total + '</td>' +
+          '<td class="muted">' + escapeHtml(item.attemptedAt) + '</td>' +
+          '</tr>';
+      }).join('');
+    }
+
+    categoryFilterEl.addEventListener('change', render);
+    searchInputEl.addEventListener('input', render);
+    refreshBtnEl.addEventListener('click', loadData);
+
+    loadData();
+  </script>
+</body>
+</html>

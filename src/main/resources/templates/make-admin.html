@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Make Admin</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<div class="container">
+    <h2>Promote User to Admin</h2>
+
+    <p style="color:red" th:text="${error}"></p>
+    <p style="color:green" th:text="${success}"></p>
+
+    <form action="/makeAdmin" method="post">
+        <input type="email" name="email" placeholder="Enter user email" required><br><br>
+        <button class="btn-admin" type="submit">Make Admin</button>
+    </form>
+
+    <p><a href="/adminDashboard">Back to Admin Panel</a></p>
+</div>
+
+</body>
+</html>

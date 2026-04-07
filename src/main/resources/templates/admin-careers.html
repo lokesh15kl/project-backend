@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manage Careers</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<div class="container">
+
+	<h2>Manage Careers</h2>
+
+	<p style="color:green" th:text="${msg}"></p>
+	<p style="color:red" th:text="${error}"></p>
+
+	<h3>Add New Assessment Section</h3>
+
+	<form action="/admin/addCategory" method="post">
+	    <input type="text" name="name" placeholder="Section name" required>
+	    <button type="submit">Add Section</button>
+	</form>
+
+	<hr>
+
+	<h3>Existing Sections</h3>
+
+	<ul>
+	    <li th:each="c : ${categories}"
+	        th:text="${c.name}">
+	    </li>
+	</ul>
+
+	<a href="/adminDashboard">⬅ Back to Dashboard</a>
+
+</div>
+
+</body>
+</html>

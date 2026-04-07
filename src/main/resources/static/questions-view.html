@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Questions Viewer</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Segoe UI, Arial, sans-serif;
+      background: linear-gradient(120deg, #1d4ed8, #6d28d9);
+      min-height: 100vh;
+      color: #111827;
+    }
+    .container {
+      max-width: 1300px;
+      margin: 24px auto;
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25);
+    }
+    h1 {
+      margin: 0 0 6px;
+      font-size: 28px;
+    }
+    .subtitle {
+      margin: 0 0 20px;
+      color: #4b5563;
+    }
+    .toolbar {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    input, select, button {
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 14px;
+    }
+    button {
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:hover { background: #1d4ed8; }
+    .meta {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 12px;
+      color: #374151;
+      font-size: 14px;
+      flex-wrap: wrap;
+    }
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1100px;
+    }
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #e5e7eb;
+      vertical-align: top;
+      text-align: left;
+      font-size: 13px;
+    }
+    th {
+      position: sticky;
+      top: 0;
+      background: #f9fafb;
+      z-index: 2;
+    }
+    .options {
+      margin: 0;
+      padding-left: 16px;
+    }
+    .empty {
+      padding: 20px;
+      text-align: center;
+      color: #6b7280;
+    }
+    .error {
+      margin: 10px 0;
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      padding: 10px;
+      display: none;
+    }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      background: #e0e7ff;
+      color: #3730a3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Backend Questions Viewer</h1>
+    <p class="subtitle">Directly view all quiz questions stored in MySQL from backend APIs.</p>
+
+    <div class="toolbar">
+      <select id="categoryFilter">
+        <option value="">All Categories</option>
+      </select>
+      <input id="textFilter" type="text" placeholder="Search by quiz name or question text">
+      <button id="refreshBtn" type="button">Refresh</button>
+    </div>
+
+    <div class="meta">
+      <span>Total questions: <strong id="totalCount">0</strong></span>
+      <span>Filtered: <strong id="filteredCount">0</strong></span>
+      <a href="/api/admin/questions/all" target="_blank" rel="noreferrer">Open raw JSON</a>
+    </div>
+
+    <div id="errorBox" class="error"></div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>S.No</th>
+            <th>Category</th>
+            <th>Quiz</th>
+            <th>Type</th>
+            <th>Question</th>
+            <th>Options</th>
+            <th>Correct Answer</th>
+            <th>Created At</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const rowsEl = document.getElementById('rows');
+    const totalCountEl = document.getElementById('totalCount');
+    const filteredCountEl = document.getElementById('filteredCount');
+    const categoryFilterEl = document.getElementById('categoryFilter');
+    const textFilterEl = document.getElementById('textFilter');
+    const errorBoxEl = document.getElementById('errorBox');
+    const refreshBtnEl = document.getElementById('refreshBtn');
+
+    let allRows = [];
+
+    function escapeHtml(text) {
+      return String(text || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function showError(message) {
+      errorBoxEl.textContent = message;
+      errorBoxEl.style.display = 'block';
+    }
+
+    function hideError() {
+      errorBoxEl.style.display = 'none';
+      errorBoxEl.textContent = '';
+    }
+
+    async function loadAll() {
+      hideError();
+      try {
+        const response = await fetch('/api/admin/questions/all');
+        if (!response.ok) {
+          throw new Error('HTTP ' + response.status);
+        }
+        const data = await response.json();
+        allRows = Array.isArray(data) ? data : [];
+        totalCountEl.textContent = String(allRows.length);
+
+        const categories = Array.from(new Set(allRows.map(item => String(item.category || '').trim()).filter(Boolean))).sort();
+        const current = categoryFilterEl.value;
+        categoryFilterEl.innerHTML = '<option value="">All Categories</option>' +
+          categories.map(name => '<option value="' + escapeHtml(name) + '">' + escapeHtml(name) + '</option>').join('');
+        if (categories.includes(current)) {
+          categoryFilterEl.value = current;
+        }
+
+        render();
+      } catch (error) {
+        showError('Failed to load backend questions: ' + (error.message || error));
+        allRows = [];
+        totalCountEl.textContent = '0';
+        render();
+      }
+    }
+
+    function render() {
+      const category = categoryFilterEl.value.trim().toLowerCase();
+      const search = textFilterEl.value.trim().toLowerCase();
+
+      const filtered = allRows.filter(item => {
+        const itemCategory = String(item.category || '').toLowerCase();
+        const itemQuiz = String(item.quizName || '').toLowerCase();
+        const itemQuestion = String(item.questionText || '').toLowerCase();
+
+        const categoryOk = !category || itemCategory === category;
+        const textOk = !search || itemQuiz.includes(search) || itemQuestion.includes(search);
+
+        return categoryOk && textOk;
+      });
+
+      filteredCountEl.textContent = String(filtered.length);
+
+      if (filtered.length === 0) {
+        rowsEl.innerHTML = '<tr><td colspan="8" class="empty">No questions found for current filter.</td></tr>';
+        return;
+      }
+
+      rowsEl.innerHTML = filtered.map((item, index) => {
+        const options = Array.isArray(item.options) ? item.options.filter(Boolean) : [];
+        const optionsHtml = options.length
+          ? '<ol class="options">' + options.map(opt => '<li>' + escapeHtml(opt) + '</li>').join('') + '</ol>'
+          : '<span class="badge">No options</span>';
+
+        return '<tr>' +
+          '<td>' + (index + 1) + '</td>' +
+          '<td>' + escapeHtml(item.category) + '</td>' +
+          '<td>' + escapeHtml(item.quizName) + '</td>' +
+          '<td><span class="badge">' + escapeHtml(item.questionType) + '</span></td>' +
+          '<td>' + escapeHtml(item.questionText) + '</td>' +
+          '<td>' + optionsHtml + '</td>' +
+          '<td>' + escapeHtml(item.correctAnswer) + '</td>' +
+          '<td>' + escapeHtml(item.createdAt) + '</td>' +
+          '</tr>';
+      }).join('');
+    }
+
+    categoryFilterEl.addEventListener('change', render);
+    textFilterEl.addEventListener('input', render);
+    refreshBtnEl.addEventListener('click', loadAll);
+
+    loadAll();
+  </script>
+</body>
+</html>

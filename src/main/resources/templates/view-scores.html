@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Scores</title>
+</head>
+<body>
+
+<h2>Student Scores 📊</h2>
+
+<table border="1">
+    <tr>
+        <th>Email</th>
+        <th>Score</th>
+    </tr>
+
+    <tr th:each="s : ${scores}">
+        <td th:text="${s.userEmail}"></td>
+        <td th:text="${s.score}"></td>
+    </tr>
+</table>
+
+<a href="/adminDashboard">Back</a>
+
+</body>
+</html>

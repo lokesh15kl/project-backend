@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Designer Admin Login</title>
+    <style>
+        :root {
+            --bg-1: #ecf2f6;
+            --bg-2: #e4edf2;
+            --card: #ffffff;
+            --text: #122332;
+            --muted: #5d7284;
+            --line: #d2dee8;
+            --accent: #0f6b64;
+            --accent-2: #0b4e49;
+            --danger: #b42318;
+            --ok: #0f766e;
+            --shadow: 0 20px 44px rgba(11, 23, 38, 0.14);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Trebuchet MS", "Segoe UI", Tahoma, sans-serif;
+            color: var(--text);
+            display: grid;
+            place-items: center;
+            padding: 20px;
+            background:
+                radial-gradient(circle at 10% 10%, #d9ece8 0, transparent 32%),
+                radial-gradient(circle at 90% 90%, #dce8f1 0, transparent 40%),
+                linear-gradient(160deg, var(--bg-1), var(--bg-2));
+        }
+
+        .panel {
+            width: min(460px, 96vw);
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .panel-head {
+            background: linear-gradient(130deg, #115d58 0%, #0b4e49 100%);
+            color: #f2fffc;
+            padding: 24px 24px 20px;
+        }
+
+        .panel-head h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            letter-spacing: 0.2px;
+        }
+
+        .panel-head p {
+            margin: 8px 0 0;
+            color: #d7eee8;
+            line-height: 1.45;
+            font-size: 0.94rem;
+        }
+
+        form {
+            padding: 22px;
+        }
+
+        .field {
+            margin-bottom: 14px;
+        }
+
+        .field label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 7px;
+            color: #1c3246;
+            font-size: 0.92rem;
+        }
+
+        .field input {
+            width: 100%;
+            border: 1px solid var(--line);
+            border-radius: 11px;
+            padding: 12px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .field input:focus {
+            border-color: #8bbfc7;
+            box-shadow: 0 0 0 4px rgba(15, 107, 100, 0.12);
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 6px;
+            flex-wrap: wrap;
+        }
+
+        button,
+        .back-link {
+            border: 1px solid transparent;
+            border-radius: 11px;
+            padding: 11px 14px;
+            font-weight: 700;
+            font-size: 0.93rem;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        button {
+            background: var(--accent);
+            color: #ffffff;
+        }
+
+        button:hover {
+            background: var(--accent-2);
+        }
+
+        .back-link {
+            background: #f3f8fb;
+            color: #254158;
+            border-color: var(--line);
+        }
+
+        .message {
+            margin-top: 14px;
+            min-height: 22px;
+            font-size: 0.92rem;
+            font-weight: 600;
+        }
+
+        .message.error {
+            color: var(--danger);
+        }
+
+        .message.ok {
+            color: var(--ok);
+        }
+
+        .foot {
+            padding: 0 22px 20px;
+            color: var(--muted);
+            font-size: 0.86rem;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <main class="panel">
+        <header class="panel-head">
+            <h1>Designer Login</h1>
+            <p>This access point is restricted to administrator accounts only.</p>
+        </header>
+
+        <form id="adminLoginForm">
+            <div class="field">
+                <label for="email">Admin Email</label>
+                <input id="email" name="email" type="email" autocomplete="username" required>
+            </div>
+
+            <div class="field">
+                <label for="password">Password</label>
+                <input id="password" name="password" type="password" autocomplete="current-password" required>
+            </div>
+
+            <div class="actions">
+                <button id="submitBtn" type="submit">Sign In as Admin</button>
+                <a class="back-link" href="/">Back to Control Center</a>
+            </div>
+
+            <div id="message" class="message" aria-live="polite"></div>
+        </form>
+
+        <div class="foot">
+            Tip: Non-admin accounts will be blocked even with valid credentials.
+        </div>
+    </main>
+
+    <script>
+        const form = document.getElementById('adminLoginForm');
+        const messageEl = document.getElementById('message');
+        const submitBtn = document.getElementById('submitBtn');
+
+        function setMessage(text, kind) {
+            messageEl.textContent = text;
+            messageEl.className = 'message' + (kind ? ' ' + kind : '');
+        }
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            setMessage('', '');
+
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            if (!email || !password) {
+                setMessage('Email and password are required.', 'error');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Signing In...';
+
+            try {
+                const response = await fetch('/api/auth/admin-login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const payload = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    setMessage(payload.message || 'Login failed. Please try again.', 'error');
+                    return;
+                }
+
+                if ((payload.role || '').toUpperCase() !== 'ADMIN') {
+                    await fetch('/api/auth/logout', { method: 'POST' });
+                    setMessage('Admin access only. This account is not authorized.', 'error');
+                    return;
+                }
+
+                setMessage('Login successful. Redirecting...', 'ok');
+                window.location.href = '/control-center.html';
+            } catch (error) {
+                setMessage('Unable to reach server. Please try again.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Sign In as Admin';
+            }
+        });
+
+        (async function redirectIfAlreadyAdmin() {
+            try {
+                const response = await fetch('/api/auth/me', { credentials: 'include' });
+                if (!response.ok) return;
+                const user = await response.json();
+                if ((user.role || '').toUpperCase() === 'ADMIN') {
+                    window.location.replace('/control-center.html');
+                }
+            } catch (error) {
+                // Keep login page visible when session check fails.
+            }
+        })();
+    </script>
+</body>
+</html>

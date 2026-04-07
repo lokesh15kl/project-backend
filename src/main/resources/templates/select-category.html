@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Select Quiz Category</title>
+    <link rel="stylesheet" href="/css/style.css">
+
+    <style>
+        .quiz-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .quiz-box {
+            width: 240px;
+            height: 100px;
+            background: #34c759;
+            border-radius: 14px;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: all 0.25s ease;
+        }
+
+        .quiz-box:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+        }
+
+        .ai-practice {
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        .ai-practice input {
+            width: 60%;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+        }
+
+        .ai-practice button {
+            margin-top: 15px;
+            padding: 12px 30px;
+            font-size: 18px;
+            background: #6a1b9a;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+        }
+
+        .ai-practice button:hover {
+            background: #4a148c;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h2 style="text-align:center;">Select Assessment</h2>
+    <p style="text-align:center;">Choose a quiz to attempt</p>
+
+    <!-- QUIZ CATEGORIES -->
+
+	<div class="quiz-container">
+
+	    <a href="/quizList?category=Personality" class="quiz-box">
+	        Personality
+	    </a>
+
+	    <a href="/quizList?category=Aptitude" class="quiz-box">
+	        Aptitude
+	    </a>
+
+	    <a href="/quizList?category=Technical" class="quiz-box">
+	        Technical
+	    </a>
+
+	    <a href="/quizList?category=Logical" class="quiz-box">
+	        Logical
+	    </a>
+		<a href="/quizList?category=Career Interest" class="quiz-box">
+			 Career Interest
+			    </a>
+
+	</div>
+
+    <!-- AI PRACTICE -->
+    <div class="ai-practice">
+        <h3>Practice with AI 🤖</h3>
+
+        <form action="/user/generateAIQuiz" method="post">
+            <input type="text"
+                   name="topic"
+                   placeholder="Enter topic (Java, Aptitude, Personality)"
+                   required>
+            <br>
+            <button type="submit">Practice using ChatGPT</button>
+        </form>
+    </div>
+
+    <br><br>
+    <div style="text-align:center;">
+        <a href="/logout">Logout</a>
+    </div>
+
+</div>
+
+</body>
+</html>

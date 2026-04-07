@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Assessment</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<div class="container">
+
+    <!-- BLOCK MESSAGE -->
+    <p style="color:red;" th:if="${error}" th:text="${error}"></p>
+
+    <h2>Career Assessment Quiz 🧠</h2>
+
+    <form action="/submitQuiz" method="post" th:if="${quizList}">
+
+        <div th:each="q, stat : ${quizList}">
+            <p><b th:text="${stat.count} + '. ' + ${q.question}"></b></p>
+
+            <input type="radio" th:name="'q'+${q.id}" th:value="${q.option1}" required> 
+            <span th:text="${q.option1}"></span><br>
+
+            <input type="radio" th:name="'q'+${q.id}" th:value="${q.option2}"> 
+            <span th:text="${q.option2}"></span><br>
+
+            <input type="radio" th:name="'q'+${q.id}" th:value="${q.option3}"> 
+            <span th:text="${q.option3}"></span><br>
+
+            <input type="radio" th:name="'q'+${q.id}" th:value="${q.option4}"> 
+            <span th:text="${q.option4}"></span><br>
+
+            <hr>
+        </div>
+
+        <button class="btn-user" type="submit">Submit Quiz</button>
+    </form>
+
+    <br>
+    <a class="link" href="/logout">Logout</a>
+</div>
+
+</body>
+</html>
