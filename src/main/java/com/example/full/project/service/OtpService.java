@@ -2,6 +2,8 @@ package com.example.full.project.service;
 
 import java.util.Random;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
@@ -15,12 +17,14 @@ import jakarta.mail.internet.MimeMessage;
 @Service
 public class OtpService {
 
+    private static final Logger log = LoggerFactory.getLogger(OtpService.class);
+
     private final JavaMailSender mailSender;
     private final String smtpUsername;
 
     public OtpService(ObjectProvider<JavaMailSender> mailSenderProvider, @Value("${spring.mail.username:}") String smtpUsername) {
         this.mailSender = mailSenderProvider.getIfAvailable();
-        this.smtpUsername = smtpUsername;
+        this.smtpUsername = smtpUsername == null ? "" : smtpUsername.trim();
     }
 
     public String generateOtp() {
@@ -51,6 +55,7 @@ public class OtpService {
                     true);
             mailSender.send(message);
         } catch (MailException | MessagingException ex) {
+            log.error("Failed to send OTP email to {} using SMTP user {}", toEmail, smtpUsername, ex);
             throw new RuntimeException("Failed to send OTP email. Verify Gmail app password and SMTP settings.", ex);
         }
     }
