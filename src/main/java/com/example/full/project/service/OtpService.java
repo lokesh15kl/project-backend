@@ -21,10 +21,15 @@ public class OtpService {
 
     private final JavaMailSender mailSender;
     private final String smtpUsername;
+    private final String smtpFrom;
 
-    public OtpService(ObjectProvider<JavaMailSender> mailSenderProvider, @Value("${spring.mail.username:}") String smtpUsername) {
+    public OtpService(
+            ObjectProvider<JavaMailSender> mailSenderProvider,
+            @Value("${spring.mail.username:}") String smtpUsername,
+            @Value("${app.mail.from:}") String smtpFrom) {
         this.mailSender = mailSenderProvider.getIfAvailable();
         this.smtpUsername = smtpUsername == null ? "" : smtpUsername.trim();
+        this.smtpFrom = (smtpFrom == null || smtpFrom.isBlank()) ? this.smtpUsername : smtpFrom.trim();
     }
 
     public String generateOtp() {
@@ -42,10 +47,11 @@ public class OtpService {
         }
 
         try {
+            String recipient = toEmail == null ? "" : toEmail.trim().toLowerCase();
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, false, "UTF-8");
-            helper.setFrom(smtpUsername);
-            helper.setTo(toEmail);
+            helper.setFrom(smtpFrom);
+            helper.setTo(recipient);
             helper.setSubject("Your OTP for Career Portal Signup");
             helper.setText(
                     "<div style='font-family:Arial,sans-serif;line-height:1.6'>" +
