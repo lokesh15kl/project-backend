@@ -354,8 +354,11 @@ public class AuthController {
         try {
             otpService.sendOtp(normalizedEmail, otp);
         } catch (RuntimeException ex) {
+            Throwable rootCause = rootCause(ex);
             return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(Map.of(
-                    "message", ex.getMessage(),
+                    "message", rootCause == null || rootCause.getMessage() == null ? ex.getMessage() : rootCause.getMessage(),
+                    "errorType", rootCause == null ? ex.getClass().getSimpleName() : rootCause.getClass().getSimpleName(),
+                    "details", ex.getMessage(),
                     "success", false,
                     "otpBypassed", false));
         }
@@ -419,8 +422,11 @@ public class AuthController {
         try {
             otpService.sendOtp(pendingEmail, otp);
         } catch (RuntimeException ex) {
+            Throwable rootCause = rootCause(ex);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
-                    "message", ex.getMessage(),
+                    "message", rootCause == null || rootCause.getMessage() == null ? ex.getMessage() : rootCause.getMessage(),
+                    "errorType", rootCause == null ? ex.getClass().getSimpleName() : rootCause.getClass().getSimpleName(),
+                    "details", ex.getMessage(),
                     "success", false));
         }
 
@@ -632,6 +638,14 @@ public class AuthController {
 
     private String normalize(String value) {
         return value == null ? "" : value.trim();
+    }
+
+    private Throwable rootCause(Throwable throwable) {
+        Throwable current = throwable;
+        while (current != null && current.getCause() != null && current.getCause() != current) {
+            current = current.getCause();
+        }
+        return current;
     }
 
     private boolean isPasswordValid(AppUser user, String rawPassword) {
