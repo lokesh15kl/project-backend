@@ -11,6 +11,8 @@ public class FullProjectApplication {
         System.setProperty("jdk.tls.client.protocols", "TLSv1.2");
         System.setProperty("https.protocols", "TLSv1.2");
         System.setProperty("jdk.tls.client.enableStatusRequestExtension", "false");
+        System.setProperty("java.net.preferIPv4Stack", "true");
+        System.setProperty("java.net.preferIPv6Addresses", "false");
         System.setProperty("com.sun.net.ssl.checkRevocation", "false");
         System.setProperty("com.sun.security.enableCRLDP", "false");
         System.setProperty("ocsp.enable", "false");
